@@ -12,10 +12,10 @@ export PS4='+$LINENO:$FUNCNAME:'
 clear
 DATE=`date`
 echo [DATE] : $DATE
+echo "=============================<CPU INFO>================================="
 CPU_INFO=`dmidecode -t processor | grep Version | tail -n1 | cut -d ':' -f2`
 CPU_CORE=`dmidecode -t processor | grep -i "Core Count" | tail -n1 | cut -d ':' -f2`
 declare -i CPU_LOGICAL_CORE=`cat /proc/cpuinfo | grep processor | tail -n1 | cut -d ':' -f2`
-echo "=============================<CPU INFO>================================="
 echo [CPU_NAME] : $CPU_INFO
 echo [PHYSICAL_Core] :$CPU_CORE
 
@@ -24,23 +24,30 @@ CPU_LOGICAL_CORE=CPU_LOGICAL_CORE+1
 echo [LOGICAL_CORE] : $CPU_LOGICAL_CORE
 #CPU_used...
 echo " "
-echo " "
 
 echo "============================<MEMORY INFO>==============================="
-MEMORY_INFO=`cat /proc/meminfo | grep MemTotal | cut -d ':' -f2 | awk '{print $1}'`
-echo [MEMORY_INFO] : $MEMORY_INFO 
-FREE=`cat /proc/meminfo | grep MemFree | cut -d ':' -f2 | awk '{print $1}'`
-echo [MEM_FREE] : $FREE
-AVAILABLE=`cat /proc/meminfo | grep MemAvailable | cut -d ':' -f2 | awk '{print $1}'`
-echo [AVAILABLE] : $AVAILABLE
-CACHED=`cat /proc/meminfo | grep ^Cached | cut -d ':' -f2 | awk '{print $1}'`
-echo [CACHED] : $CACHED
+declare -i MEMORY_INFO=`cat /proc/meminfo | grep MemTotal | cut -d ':' -f2 | awk '{print $1}'`
+MEMORY_INFO=MEMORY_INFO/1024
+echo [MEMORY_INFO] : $MEMORY_INFO MB
 
-SWAP=`cat /proc/meminfo | grep SwapTotal | cut -d ':' -f2 | awk '{print $1}'`
-echo [SWAP_TOTAL] : $SWAP
+declare -i FREE=`cat /proc/meminfo | grep MemFree | cut -d ':' -f2 | awk '{print $1}'`
+FREE=FREE/1024
+echo [MEM_FREE] : $FREE MB
+
+declare -i AVAILABLE=`cat /proc/meminfo | grep MemAvailable | cut -d ':' -f2 | awk '{print $1}'`
+AVAILABLE=AVAILABLE/1024
+echo [AVAILABLE] : $AVAILABLE MB
+
+declare -i CACHED=`cat /proc/meminfo | grep ^Cached | cut -d ':' -f2 | awk '{print $1}'`
+CACHED=CACHED/1024
+echo [CACHED] : $CACHED MB
+
+declare -i SWAP=`cat /proc/meminfo | grep SwapTotal | cut -d ':' -f2 | awk '{print $1}'`
+SWAP=SWAP/1024
+echo [SWAP_TOTAL] : $SWAP MB
 SWAP=`cat /proc/meminfo | grep SwapFree | cut -d ':' -f2 | awk '{print $1}'`
-echo [SWAP_FREE] : $SWAP
-echo " "
+SWAP=SWAP/1024
+echo [SWAP_FREE] : $SWAP MB
 echo " "
 
 echo "==========================<OS VERSION INFO>============================="
@@ -49,7 +56,6 @@ BITS=`getconf LONG_BIT`
 echo [OS_VERSION] : $OS
 echo [BIT] : $BITS bit
 echo " "
-echo " "
 
 
 echo "=======================<PACKAGE VERSION INFO>==========================="
@@ -57,13 +63,65 @@ JAVA=`java --version`
 echo [JAVA_VERSION] : $JAVA
 POSTGRESQL=`psql --version`
 echo [POSTGRESQL] : $POSTGRESQL
-
+echo " "
 
 echo "===========================<PROCESS INFO>==============================="
-echo ps -ef | grep java
+echo [JAVA]
+echo `ps -ef | grep java`
+echo [Postgresql]
+echo `ps -ef | grep postgres`
+echo " "
 
 
-echo "=============================<CPU INFO>================================="
-echo "=============================<CPU INFO>================================="
-echo "=============================<CPU INFO>================================="
+echo "===========================<fdisk -l INFO>==============================="
+DEV_DISK1=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sda" | cut -d ':' -f1`
+DEV_DISK2=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdb" | cut -d ':' -f1`
+DEV_DISK3=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdc" | cut -d ':' -f1`
+DEV_DISK4=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdc" | cut -d ':' -f1`
+SIZE1=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sda" | cut -d ':' -f2`
+SIZE2=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdb" | cut -d ':' -f2`
+SIZE3=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdc" | cut -d ':' -f2`
+SIZE4=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdc" | cut -d ':' -f2`
+echo [DEV_DISK_1] : ${DEV_DISK1:-" "} ${SIZE1:-"null"}
+echo [DEV_DISK_2] : ${DEV_DISK2:-" "} ${SIZE2:-"null"}
+echo [DEV_DISK_3] : ${DEV_DISK3:-" "} ${SIZE3:-"null"}
+echo [DEV_DISK_4] : ${DEV_DISK4:-" "} ${SIZE4:-"null"}
+echo " "
+
+
+echo "=============================<df -h INFO>================================="
+TITLE=`df -h | head -n1`
+echo "  "[TITLE] : $TITLE
+ROOT=`df -h | grep /$`
+echo "   "[ROOT] : $ROOT
+
+VAR=`df -h | grep var&`
+echo "    "[VAR] : $VAR
+
+BOOT=`df -h | grep /boot$`
+echo "   "[BOOT] : $BOOT
+
+USR=`df -h | grep /usr$`
+echo "    "[USR] : $USR
+
+CODERAY=`df -h | grep /CODERAY`
+echo [CODERAY] : $CODERAY
+echo " "
+
+
+echo "==============================<System Log>================================="
+#ERROR=`cat /var/log/messages | grep error`
+#PENDDING=`cat /var/log/messages | grep pendding`
+#FAIL=`cat /var/log/messages | grep fail`
+echo [ERROR] Log
+cat /var/log/messages | grep error
+echo " "
+
+echo [PENDDING] log
+cat /var/log/messages | grep pendding
+echo " "
+
+echo [FAIL] log
+cat /var/log/messages | grep fail
+echo " "
 
