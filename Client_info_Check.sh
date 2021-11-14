@@ -12,6 +12,14 @@ export PS4='+$LINENO:$FUNCNAME:'
 clear
 DATE=`date`
 echo [DATE] : $DATE
+HWDATE=`hwclock`
+echo [HWCLOCK] : $HWDATE
+USER_CRRENT_ID=`whoami`
+USER_SHELL=`echo $$`
+TTY=`tty`
+echo [USER_CRRENT_ID] : $USER_CRRENT_ID
+echo [USER_SHELL] : $USER 
+echo [TTY] : $TTY
 echo "=============================<CPU INFO>================================="
 CPU_INFO=`dmidecode -t processor | grep Version | tail -n1 | cut -d ':' -f2`
 CPU_CORE=`dmidecode -t processor | grep -i "Core Count" | tail -n1 | cut -d ':' -f2`
@@ -65,6 +73,19 @@ POSTGRESQL=`psql --version`
 echo [POSTGRESQL] : $POSTGRESQL
 echo " "
 
+echo "===========================<SELINUX INFO>==============================="
+SELINUX=`sestatus | grep -i "Current mode" | cut -d ':' -f2`
+setenforce 0
+echo [SELINUX] : $SELINUX
+SELINUXFILE1=`/etc/sysconfig/selinux | grep -i "SELINUX="`
+echo [SELINUX_FILE1] : $SELINUXFILE1
+sed -i "s/SELINUX=enforcing/SELINUX=permissive/" /etc/sysconfig/selinux
+SELINUXFILE2=`/etc/sysconfig/selinux | grep -i "SELINUX="`
+echo [SELINUX_FILE2] : $SELINUXFILE2
+echo " "
+
+
+
 echo "===========================<PROCESS INFO>==============================="
 echo [JAVA]
 echo `ps -ef | grep java`
@@ -77,15 +98,18 @@ echo "===========================<fdisk -l INFO>==============================="
 DEV_DISK1=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sda" | cut -d ':' -f1`
 DEV_DISK2=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdb" | cut -d ':' -f1`
 DEV_DISK3=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdc" | cut -d ':' -f1`
-DEV_DISK4=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdc" | cut -d ':' -f1`
+DEV_DISK4=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdd" | cut -d ':' -f1`
+DEV_DISK5=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sde" | cut -d ':' -f1`
 SIZE1=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sda" | cut -d ':' -f2`
 SIZE2=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdb" | cut -d ':' -f2`
 SIZE3=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdc" | cut -d ':' -f2`
-SIZE4=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdc" | cut -d ':' -f2`
+SIZE4=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sdd" | cut -d ':' -f2`
+SIZE5=`fdisk -l | grep -i "^Disk " | grep -i "/dev/sde" | cut -d ':' -f2`
 echo [DEV_DISK_1] : ${DEV_DISK1:-" "} ${SIZE1:-"null"}
 echo [DEV_DISK_2] : ${DEV_DISK2:-" "} ${SIZE2:-"null"}
 echo [DEV_DISK_3] : ${DEV_DISK3:-" "} ${SIZE3:-"null"}
 echo [DEV_DISK_4] : ${DEV_DISK4:-" "} ${SIZE4:-"null"}
+echo [DEV_DISK_5] : ${DEV_DISK5:-" "} ${SIZE5:-"null"}
 echo " "
 
 
@@ -109,19 +133,19 @@ echo [CODERAY] : $CODERAY
 echo " "
 
 
-echo "==============================<System Log>================================="
+#echo "==============================<System Log>================================="
 #ERROR=`cat /var/log/messages | grep error`
 #PENDDING=`cat /var/log/messages | grep pendding`
 #FAIL=`cat /var/log/messages | grep fail`
-echo [ERROR] Log
-cat /var/log/messages | grep error
-echo " "
+#echo [ERROR] Log
+#cat /var/log/messages | grep error
+#echo " "
 
-echo [PENDDING] log
-cat /var/log/messages | grep pendding
-echo " "
+#echo [PENDDING] log
+#cat /var/log/messages | grep pendding
+#echo " "
 
-echo [FAIL] log
-cat /var/log/messages | grep fail
-echo " "
+#echo [FAIL] log
+#cat /var/log/messages | grep fail
+#echo " "
 
