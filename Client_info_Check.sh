@@ -77,10 +77,10 @@ echo "===========================<SELINUX INFO>==============================="
 SELINUX=`sestatus | grep -i "Current mode" | cut -d ':' -f2`
 setenforce 0
 echo [SELINUX] : $SELINUX
-SELINUXFILE1=`/etc/sysconfig/selinux | grep -i "SELINUX="`
+SELINUXFILE1=`cat /etc/sysconfig/selinux | grep -i "^SELINUX=" | cut -d'=' -f2`
 echo [SELINUX_FILE1] : $SELINUXFILE1
 sed -i "s/SELINUX=enforcing/SELINUX=permissive/" /etc/sysconfig/selinux
-SELINUXFILE2=`/etc/sysconfig/selinux | grep -i "SELINUX="`
+SELINUXFILE2=`cat /etc/sysconfig/selinux | grep -i "^SELINUX=" | cut -d'=' -f2`
 echo [SELINUX_FILE2] : $SELINUXFILE2
 echo " "
 
@@ -132,6 +132,28 @@ CODERAY=`df -h | grep /CODERAY`
 echo [CODERAY] : $CODERAY
 echo " "
 
+
+echo "==============================<Firewall Log>==============================="
+DB=5432
+WEB=28443
+DBPORT=`firewall-cmd --zone=public --list-all | grep "^  ports:" | grep 5432 | cut -d':' -f2 | cut -d'/' -f1 | cut -d' ' -f2`
+WEBSSL=`firewall-cmd --zone=public --list-all | grep "^  ports:" | grep 28443 | cut -d'/' -f2 | cut -d' ' -f2`
+if [ ${DBPORT} eq ${DB} ]; then
+	echo good ${DBPORT}
+else 
+	firewall-cmd --zone=public --permanent --add-port=5432/tcp
+fi
+#firewall-cmd --zone=public --permanent --add-port=5432/tcp
+if [ ${WEBSSL} eq ${WEB} ]; then
+	echo good ${WEBSSL}
+else
+	firewall-cmd --zone=public --permanent --add-port=28443/tcp
+fi
+#firewall-cmd --zone=public --permanent --add-port=28443/tcp
+firewall-cmd --reload
+FIREWALL=`firewall-cmd --zone=public --list-all | grep "ports" |  grep tcp`
+echo [FIREWALL] : $FIREWALL
+echo " "
 
 #echo "==============================<System Log>================================="
 #ERROR=`cat /var/log/messages | grep error`
