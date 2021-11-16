@@ -74,14 +74,29 @@ echo [POSTGRESQL] : $POSTGRESQL
 echo " "
 
 echo "===========================<SELINUX INFO>==============================="
-SELINUX=`sestatus | grep -i "Current mode" | cut -d ':' -f2`
-setenforce 0
-echo [SELINUX] : $SELINUX
-SELINUXFILE1=`cat /etc/sysconfig/selinux | grep -i "^SELINUX=" | cut -d'=' -f2`
-echo [SELINUX_FILE1] : $SELINUXFILE1
-sed -i "s/SELINUX=enforcing/SELINUX=permissive/" /etc/sysconfig/selinux
-SELINUXFILE2=`cat /etc/sysconfig/selinux | grep -i "^SELINUX=" | cut -d'=' -f2`
-echo [SELINUX_FILE2] : $SELINUXFILE2
+#cp /etc/sysconf/seliux /etc/sysconf/selinux.bak
+PERMISSIVE="permissive"
+SELINUX=`sestatus | grep -i "Current mode" | cut -d ':' -f2 | sed 's/^ *//'`
+echo $SELINUX
+if [[ $SELINUX = "permissive" ]]; then
+	echo config completed.
+	
+else
+	setenforce 0
+	SELINUX=`sestatus | grep -i "Current mode" | cut -d ':' -f2 | sed 's/^ *//'`
+	echo setting Completed.
+fi
+echo [CURRENT_SELINUX] : $SELINUX
+
+SELINUXFILE1=`cat /etc/sysconfig/selinux | grep -i "^SELINUX=" | cut -d'=' -f2 | cut -d'=' -f2`
+echo $SELINUXFILE1
+if [[ $SELINUX_FILE1_Before = $PERMISSIVE ]]; then 
+	echo [SELINUX_FILE1_Before] : $SELINUXFILE1
+else
+	sed -i "s/SELINUX=enforcing/SELINUX=permissive/" /etc/sysconfig/selinux
+	SELINUXFILE2=`cat /etc/sysconfig/selinux | grep -i "^SELINUX=" | cut -d'=' -f2 | cut -d'=' -f2`
+	echo [SELINUX_FILE2_After] : $SELINUXFILE2
+fi
 echo " "
 
 
@@ -138,13 +153,13 @@ DB=5432
 WEB=28443
 DBPORT=`firewall-cmd --zone=public --list-all | grep "^  ports:" | grep 5432 | cut -d':' -f2 | cut -d'/' -f1 | cut -d' ' -f2`
 WEBSSL=`firewall-cmd --zone=public --list-all | grep "^  ports:" | grep 28443 | cut -d'/' -f2 | cut -d' ' -f2`
-if [ ${DBPORT} eq ${DB} ]; then
+if [ ${DBPORT} = ${DB} ]; then
 	echo good ${DBPORT}
 else 
 	firewall-cmd --zone=public --permanent --add-port=5432/tcp
 fi
 #firewall-cmd --zone=public --permanent --add-port=5432/tcp
-if [ ${WEBSSL} eq ${WEB} ]; then
+if [ ${WEBSSL} = ${WEB} ]; then
 	echo good ${WEBSSL}
 else
 	firewall-cmd --zone=public --permanent --add-port=28443/tcp
@@ -170,4 +185,4 @@ echo " "
 #echo [FAIL] log
 #cat /var/log/messages | grep fail
 #echo " "
-
+exit 0
